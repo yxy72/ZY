@@ -64,6 +64,22 @@ def maxPooling(arr,targetSize):
             group = []
     return np.array(res)
 
+
+def avePooling(arr,targetSize):
+    size = len(arr)/targetSize
+    if(len(arr)%targetSize!=0):
+        
+        # print(type(size))
+        return "不能整除！"
+    res = []
+    group = []
+    for i in arr:
+        group.append(i)
+        if(len(group)==size):
+            res.append(np.max(np.array(group)))
+            group = []
+    return np.array(res)
+
 # EDA数据的CNN模型，input_channel为1
 # EDA+PPG融合的CNN模型，input_channel为2
 class MODEL_CNN_EDA(nn.Module):
@@ -294,3 +310,4 @@ def TRAIN_CNN(model,modelName,target,KFSORT,dataLoader_train,dataLoader_valid,da
         if early_stopping.early_stop:
             print("Early stopping")
             break   
+    return (lossHistory,accHistory,trainAccHis)
