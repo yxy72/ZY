@@ -1,17 +1,24 @@
 import pandas as pd
 import numpy as np
 import torch
-from torch import nn
 from torch.utils.data import TensorDataset,DataLoader
 import os
-import pickle
 
+from sklearn.model_selection import KFold
+from torch import nn
+from torchsummary import summary
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+
+
+from torch.optim.lr_scheduler import StepLR
+import pickle
 
 
 # 该类用于即时中止模型过拟合
 class EarlyStopping:
     
-    def __init__(self,filename,save_path="./项目文件/model/", patience=100, delta=0):
+    def __init__(self,filename,save_path="./OUTPUT/model", patience=100, delta=0):
         self.save_path = save_path
         self.patience = patience
         self.counter = 0
@@ -38,6 +45,7 @@ class EarlyStopping:
     def save_checkpoint(self, model):
 
         path = os.path.join(self.save_path, self.filename)
+
         torch.save( model.state_dict(), path)	# 这里会存储迄今最优模型的参数
 
 
@@ -201,9 +209,13 @@ class MODEL_LSTM_EDA(nn.Module):
     
 
     
-def TRAIN(model,modelName,target,KFSORT,epochs=500,lr=0.0001,scheduler_step_size=100,scheduler_gamma=0.97):
+def TRAIN_CNN(model,modelName,target,KFSORT,dataLoader_train,dataLoader_valid,dataCount,epochs=500,lr=0.0001,scheduler_step_size=100,scheduler_gamma=0.97):
+    
+    
+ 
     
     #model = MODEL_CNN_EDA(input_channel=1)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr) #0.0008
@@ -218,7 +230,7 @@ def TRAIN(model,modelName,target,KFSORT,epochs=500,lr=0.0001,scheduler_step_size
 
 
 
-    early_stopping = EarlyStopping(patience=200,filename = modelName+"_"+target+"_5("+str(KFSORT+1)+").pth")
+    early_stopping = EarlyStopping(patience=200,filename = "model_"+modelName+"_"+target+"_5("+str(KFSORT+1)+").pth")
 
     for epoch in range(0,epochs):
         model.train()
